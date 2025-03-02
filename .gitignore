@@ -221,3 +221,47 @@ ENV/
 .commit_msg
 .pr_body
 .temp_*
+
+# SvelteKit build output
+/build
+/.svelte-kit
+/package
+
+# Node.js dependencies
+/node_modules
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Editor-specific files
+/.idea
+/.vscode
+*.sublime-project
+*.sublime-workspace
+
+# Debug files
+npm-debug.log*
+
+# Cache directories
+/.cache
+
+# Build assets
+/static/build
+
+# Testing
+/coverage
+
+# Temporary files
+*.tmp
+*.temp
+*.bak

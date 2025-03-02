@@ -1,0 +1,324 @@
+# SvelteKit Game Project Structure
+
+## Overview
+This document outlines the recommended structure for a SvelteKit-based mobile web game, focusing on organization, performance, and maintainability.
+
+## Project Structure
+
+```
+src/
+├── lib/
+│   ├── components/
+│   │   ├── game/
+│   │   │   ├── Canvas.svelte       # Main game canvas wrapper
+│   │   │   ├── Controls.svelte     # Touch control overlay
+│   │   │   ├── DebugPanel.svelte   # Development-only debug tools
+│   │   │   ├── GameUI.svelte       # HUD and game interface elements
+│   │   │   └── LoadingScreen.svelte
+│   │   └── ui/                     # Non-game UI components
+│   ├── game/
+│   │   ├── core/
+│   │   │   ├── engine.js           # Game loop and core systems
+│   │   │   ├── input.js            # Input handling and gesture processing
+│   │   │   ├── renderer.js         # Canvas rendering utilities
+│   │   │   └── state.js            # Game state management
+│   │   ├── entities/
+│   │   │   ├── player.js           # Player character logic
+│   │   │   ├── enemies.js          # Enemy behaviors and types
+│   │   │   └── items.js            # Collectibles and interactive items
+│   │   ├── abilities/
+│   │   │   ├── ability-base.js     # Base ability class
+│   │   │   ├── movement.js         # Movement-related abilities
+│   │   │   └── combat.js           # Attack abilities
+│   │   ├── world/
+│   │   │   ├── map.js              # Level layout and structure
+│   │   │   ├── collision.js        # Collision detection
+│   │   │   └── triggers.js         # Event triggers in the world
+│   │   └── utils/
+│   │       ├── math.js             # Math utilities for game physics
+│   │       ├── animations.js       # Animation helper functions
+│   │       └── debug.js            # Debugging utilities
+│   ├── stores/
+│   │   ├── game-state.js           # Svelte stores for game state
+│   │   ├── player-progress.js      # Player progression tracking
+│   │   └── settings.js             # Game settings and configuration
+│   └── assets/
+│       ├── sprites/                # Character and object sprites
+│       ├── tilesets/               # World environment tiles
+│       ├── effects/                # Visual effects and animations
+│       └── audio/                  # Sound effects and music
+├── routes/
+│   ├── +page.svelte               # Landing page / game launcher
+│   ├── +layout.svelte             # Main app layout
+│   ├── game/
+│   │   ├── +page.svelte           # Game container page
+│   │   └── +page.js               # Game page load handling
+│   ├── settings/
+│   │   └── +page.svelte           # Game settings page
+│   └── about/
+│       └── +page.svelte           # About/credits page
+├── app.html                       # HTML template
+└── service-worker.js              # Service worker for offline support
+```
+
+## Implementation Guidelines
+
+### Component Design
+- Keep game canvas components focused on rendering and delegating to game logic
+- Separate game state from UI state
+- Use Svelte stores for persistent game data and settings
+- Implement responsive design for different device orientations
+
+### Game Engine Integration
+
+```javascript
+// lib/game/core/engine.js
+export class GameEngine {
+  constructor(canvas, options = {}) {
+    this.canvas = canvas;
+    this.ctx = canvas.getContext('2d');
+    this.lastTime = 0;
+    this.accumulator = 0;
+    this.timestep = 1000/60; // Target 60 FPS
+    this.entities = [];
+    this.systems = [];
+    this.inputHandler = null;
+    this.isRunning = false;
+    
+    // Configure with options
+    Object.assign(this, options);
+  }
+  
+  init() {
+    // Initialize game systems
+    return this;
+  }
+  
+  start() {
+    this.isRunning = true;
+    this.lastTime = performance.now();
+    requestAnimationFrame(this.loop.bind(this));
+    return this;
+  }
+  
+  stop() {
+    this.isRunning = false;
+    return this;
+  }
+  
+  loop(timestamp) {
+    if (!this.isRunning) return;
+    
+    const deltaTime = timestamp - this.lastTime;
+    this.lastTime = timestamp;
+    
+    // Fixed timestep updates
+    this.accumulator += deltaTime;
+    while (this.accumulator >= this.timestep) {
+      this.update(this.timestep);
+      this.accumulator -= this.timestep;
+    }
+    
+    // Render
+    this.render(this.accumulator / this.timestep); // Interpolation factor
+    
+    requestAnimationFrame(this.loop.bind(this));
+  }
+  
+  update(deltaTime) {
+    // Update all game systems and entities
+    for (const system of this.systems) {
+      system.update(deltaTime);
+    }
+    
+    for (const entity of this.entities) {
+      entity.update(deltaTime);
+    }
+  }
+  
+  render(interpolation) {
+    // Clear canvas
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    
+    // Render world and entities
+    for (const entity of this.entities) {
+      entity.render(this.ctx, interpolation);
+    }
+  }
+}
+```
+
+### Svelte Component Integration
+
+```svelte
+<!-- src/lib/components/game/Canvas.svelte -->
+<script>
+  import { onMount, onDestroy } from 'svelte';
+  import { GameEngine } from '$lib/game/core/engine';
+  import { InputHandler } from '$lib/game/core/input';
+  import { Player } from '$lib/game/entities/player';
+  import { World } from '$lib/game/world/map';
+  import { gameState } from '$lib/stores/game-state';
+  
+  let canvas;
+  let engine;
+  
+  onMount(() => {
+    // Set canvas dimensions
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    
+    // Initialize game
+    engine = new GameEngine(canvas, { 
+      debug: $gameState.debugMode 
+    });
+    
+    // Setup input handler
+    const input = new InputHandler(canvas);
+    engine.inputHandler = input;
+    
+    // Create world and player
+    const world = new World(engine);
+    const player = new Player(engine, input);
+    
+    engine.entities.push(world, player);
+    
+    // Start game loop
+    engine.init().start();
+    
+    // Handle resize
+    const handleResize = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    };
+    
+    window.addEventListener('resize', handleResize);
+    
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      engine.stop();
+    };
+  });
+</script>
+
+<canvas 
+  bind:this={canvas} 
+  class="game-canvas"
+></canvas>
+
+<style>
+  .game-canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    touch-action: none; /* Prevent browser handling of touch events */
+  }
+</style>
+```
+
+### Game State Management with Stores
+
+```javascript
+// src/lib/stores/game-state.js
+import { writable, derived } from 'svelte/store';
+import { browser } from '$app/environment';
+
+// Initial state
+const defaultState = {
+  playerPosition: { x: 0, y: 0 },
+  health: 100,
+  abilities: {
+    dash: false,
+    doubleJump: false,
+    wallClimb: false,
+    chargedAttack: false
+  },
+  inventory: [],
+  gameTime: 0,
+  areasDiscovered: [],
+  currentArea: 'start',
+  debugMode: false
+};
+
+// Create a function to persist state
+function createGameState() {
+  // Try to load state from localStorage if in browser
+  const saved = browser ? 
+    JSON.parse(localStorage.getItem('gameState') || 'null') : 
+    null;
+  
+  const state = writable(saved || defaultState);
+  
+  // Subscribe to changes and save to localStorage
+  if (browser) {
+    state.subscribe(value => {
+      localStorage.setItem('gameState', JSON.stringify(value));
+    });
+  }
+  
+  return {
+    ...state,
+    reset: () => state.set(defaultState),
+    unlockAbility: (ability) => {
+      state.update(s => ({
+        ...s,
+        abilities: {
+          ...s.abilities,
+          [ability]: true
+        }
+      }));
+    }
+  };
+}
+
+export const gameState = createGameState();
+
+// Derived stores for specific parts of state
+export const playerAbilities = derived(
+  gameState,
+  $gameState => $gameState.abilities
+);
+
+export const playerProgress = derived(
+  gameState,
+  $gameState => ({
+    areasDiscovered: $gameState.areasDiscovered.length,
+    abilitiesUnlocked: Object.values($gameState.abilities).filter(Boolean).length,
+    gameTimeMinutes: Math.floor($gameState.gameTime / 60)
+  })
+);
+```
+
+## Performance Considerations
+
+### Canvas Optimization
+- Use multiple layered canvases for different elements (background, entities, UI)
+- Implement texture atlases and sprite batching
+- Only draw entities that are visible within the viewport
+- Use requestAnimationFrame with a fixed timestep and interpolation
+
+### Asset Loading
+- Implement progressive asset loading during gameplay
+- Preload essential assets before game start
+- Use a loading screen with progress indicator
+- Implement asset caching with service workers
+
+### Memory Management
+- Properly dispose of unused resources
+- Implement object pooling for frequently created/destroyed objects
+- Monitor memory usage with performance tools
+- Use WeakMaps for temporary object references
+
+## Accessibility Guidelines
+- Support keyboard input as alternative to touch
+- Implement high contrast mode for visual elements
+- Allow customization of control sensitivity
+- Provide text alternatives for important visual cues
+
+## Deployment Considerations
+- Use proper cache headers for static assets
+- Implement versioning for cache busting
+- Configure appropriate compression for assets
+- Set up PWA manifest and icons 

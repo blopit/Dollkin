@@ -1,0 +1,11 @@
+This directory will contain sprite assets for the game.
+
+For the player sprite, you'll need a sprite sheet with:
+- Idle animation (4 frames)
+- Walk animation (4 frames)
+- Attack animation (if applicable)
+
+Recommended format: PNG with transparency
+Recommended size: 32x32 pixels per frame
+
+You can replace this file with actual sprite assets. 

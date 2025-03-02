@@ -1,0 +1,186 @@
+# Mobile Web Game Development Guidelines
+
+## Overview
+This document outlines best practices and guidelines for developing a touch-based Metroidvania game for mobile web platforms, focusing on responsive touch controls, efficient rendering, and progressive enhancement.
+
+## Core Principles
+- **Performance First**: Optimize for mobile devices with varying capabilities
+- **Touch-Optimized**: Design all interactions around natural touch gestures
+- **Progressive Enhancement**: Start with basic functionality, enhance as abilities are unlocked
+- **Cross-Browser Compatibility**: Ensure consistent experience across all modern mobile browsers
+
+## Touch Input Implementation
+
+### Gesture System
+- Implement a unified gesture system with these core interactions:
+  - **Tap**: Simple press and release for basic actions
+  - **Swipe**: Direction-based movement with velocity detection
+  - **Hold and Release**: Charging mechanism with visual feedback
+
+### Input Processing Guidelines
+```javascript
+// Recommended pattern for touch input handling
+function setupTouchControls(canvas) {
+  let touchStartTime = 0;
+  let touchStartPos = { x: 0, y: 0 };
+  let isHolding = false;
+  let chargeLevel = 0;
+  
+  canvas.addEventListener('touchstart', (e) => {
+    e.preventDefault(); // Prevent scrolling
+    touchStartTime = performance.now();
+    touchStartPos = { 
+      x: e.touches[0].clientX, 
+      y: e.touches[0].clientY 
+    };
+    isHolding = true;
+    
+    // Start visual charging feedback
+    startChargeAnimation();
+  });
+  
+  canvas.addEventListener('touchmove', (e) => {
+    if (!isHolding) return;
+    
+    const currentPos = { 
+      x: e.touches[0].clientX, 
+      y: e.touches[0].clientY 
+    };
+    
+    // Update charging direction indicator
+    updateChargeDirection(touchStartPos, currentPos);
+  });
+  
+  canvas.addEventListener('touchend', (e) => {
+    const touchEndTime = performance.now();
+    const touchDuration = touchEndTime - touchStartTime;
+    
+    if (touchDuration < 200) {
+      // Short touch = Tap action
+      performTapAction(touchStartPos);
+    } else if (isHolding) {
+      // Release after hold = Charged action
+      performChargedAction(chargeLevel, touchStartPos, lastTouchPos);
+    }
+    
+    isHolding = false;
+    chargeLevel = 0;
+    stopChargeAnimation();
+  });
+}
+```
+
+### Visual Feedback
+- Provide immediate visual feedback for all touch interactions
+- Use subtle animations to confirm input registration
+- Implement directional indicators for charged actions
+- Consider haptic feedback where supported (use navigator.vibrate API)
+
+## Rendering Optimization
+
+### Canvas Performance
+- Use requestAnimationFrame for smooth animation
+- Implement proper game loop with fixed update steps
+- Utilize offscreen canvas for complex rendering operations
+- Layer multiple canvases for performance (background, character, UI layers)
+
+### Asset Management
+- Implement sprite atlases to reduce draw calls
+- Use progressive loading of assets based on game progress
+- Preload assets for upcoming areas during gameplay
+- Compress textures appropriately for mobile devices
+
+## Ability System Integration
+
+### Ability Unlock Structure
+- Design a modular ability system that enhances existing gesture controls
+- Store player progression in localStorage or IndexedDB
+- Implement ability requirements as prerequisites for accessing new areas
+- Use event-driven architecture to handle ability activation
+
+### Ability Enhancement Pattern
+```javascript
+// Example of gesture enhancement through abilities
+class GestureController {
+  constructor(player, world) {
+    this.player = player;
+    this.world = world;
+    this.abilities = {
+      dash: false,
+      doubleJump: false,
+      wallClimb: false,
+      chargedAttack: false
+    };
+  }
+  
+  unlockAbility(abilityName) {
+    if (this.abilities.hasOwnProperty(abilityName)) {
+      this.abilities[abilityName] = true;
+      // Trigger any visual effects or tutorials
+      this.world.showAbilityUnlockEffect(abilityName);
+    }
+  }
+  
+  handleSwipe(direction, force) {
+    if (this.abilities.dash) {
+      return this.player.performDash(direction, force);
+    } else {
+      return this.player.move(direction, force * 0.5);
+    }
+  }
+  
+  handleHoldRelease(direction, chargeLevel) {
+    if (this.abilities.chargedAttack && chargeLevel > 0.8) {
+      return this.player.performChargedAttack(direction);
+    } else if (this.abilities.doubleJump) {
+      return this.player.jump(direction, chargeLevel);
+    } else {
+      return this.player.basicAction(direction);
+    }
+  }
+}
+```
+
+## Progressive Web App Features
+
+### Offline Support
+- Implement service workers for asset caching
+- Store game state in browser storage
+- Provide clear indication of offline mode
+- Handle reconnection gracefully
+
+### Installation Experience
+- Create a web manifest for "Add to Home Screen" functionality
+- Design appropriate app icons for various platforms
+- Optimize startup performance after installation
+- Implement proper splash screen
+
+## Performance Monitoring
+
+### Key Metrics
+- Target 60fps rendering on mid-range devices
+- Monitor and optimize touch input latency (<50ms response)
+- Track memory usage, especially for texture assets
+- Implement debugging tools for performance monitoring
+
+### Testing Guidelines
+- Test on actual devices, not just emulators
+- Implement automated performance tests
+- Validate touch controls across different screen sizes
+- Test under varying network conditions
+
+## Accessibility Considerations
+- Provide alternative control schemes
+- Support high contrast mode
+- Include options for gesture sensitivity
+- Allow customization of visual feedback intensity
+
+## Implementation Checklist
+- [ ] Basic touch input system
+- [ ] Canvas rendering optimization
+- [ ] Game state management
+- [ ] Ability unlock system
+- [ ] Progressive loading
+- [ ] Visual feedback mechanisms
+- [ ] Service worker implementation
+- [ ] Cross-browser testing 
