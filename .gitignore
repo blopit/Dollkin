@@ -14,7 +14,7 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
+/lib/
 lib64/
 parts/
 sdist/
@@ -25,6 +25,9 @@ share/python-wheels/
 .installed.cfg
 *.egg
 MANIFEST
+
+# Don't ignore src/lib directory
+!src/lib/
 
 # PyInstaller
 #  Usually these files are written by a python script from a template

@@ -1,0 +1,23 @@
+/**
+ * GameAssets.ts
+ * Contains base64-encoded assets for the game
+ * This allows us to embed assets directly in the code without requiring external files
+ */
+
+/**
+ * Base64-encoded projectile sprite
+ * A simple circular projectile with a glowing effect
+ */
+export const PROJECTILE_SPRITE_BASE64 = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAACXBIWXMAAAsTAAALEwEAmpwYAAABEElEQVR42mNgGAXEgP9gQJTi/1CAbBDRmv+DAcjlRBkCshhZM1GGwDQja8bpEphmZM1YDYFpRtaMYghMM7JmhCEwzciaYYbANCNrhhsC04ysGWQITDOyZpAhDjDNyJpBhvyHaUbWDDIEphlZM8iQ/zDNyJpBhsA0I2sGGfIfphlZM8gQmGZkzSBD/sM0I2sGGQLTjKwZZMh/mGZkzSBDYJqRNYMM+Q/TjKwZZAhMM7JmkCH/YZqRNYMMgWlG1gwy5D9MM7JmkCEwzciaQYb8h2lG1gwyBKYZWTPIkP8wzciaQYbANCNrBhnyH6YZWTPIEJhmZM0gQ/7DNCNrBhkC04ysGWTIf5hmZM2jgAEAWwKK4T4q4kQAAAAASUVORK5CYII=';
+
+/**
+ * Base64-encoded enemy sprite
+ * A simple enemy character
+ */
+export const ENEMY_SPRITE_BASE64 = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAACXBIWXMAAAsTAAALEwEAmpwYAAAA5klEQVR42mNgGAU4wf///xmxiRNlyH8YgGkmypD/MADTTJQh/2EAphnZEKINgWlGNgSrITDNMENwGgLTDDMEqyEwzTBDsBoCMwRmCFZDYIbADMFqCMwQmCFYDYEZAjMEqyEwQ2CGYDUEZgjMEKyGwAyBGYLVEJghMEOwGgIzBGYIVkNghsAMwWoIzBCYIVgNgRkCMwSrITBDYIZgNQRmCMwQrIbADIEZgtUQmCEwQ7AaAjMEZghWQ2CGwAzBagjMEJghWA2BGQIzBKshMENghmA1BGYIzBCshsAMgRmC1RCYITBDRgEDACzZYKGcA8ZEAAAAAElFTkSuQmCC';
+
+/**
+ * Base64-encoded power-up sprite
+ * A simple power-up item
+ */
+export const POWERUP_SPRITE_BASE64 = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAACXBIWXMAAAsTAAALEwEAmpwYAAAA1ElEQVR42mNgGAXDCPz//5/h////DFgBVDEjTsNhmrEZQpQhMM3YDCHaEJhmbIYQZQhMMzZDiDYEphmXIQQNgWnGZQheQ2CacRmC1xCYZlyG4DUEphmXIXgNgWnGZQheQ2CacRmC1xCYZlyG4DUEphmXIXgNgWnGZQheQ2CacRmC1xCYZlyG4DUEphmXIXgNgWnGZQheQ2CacRmC1xCYZlyG4DUEphmXIXgNgWnGZQheQ2CacRmC1xCYZlyG4DUEphmXIXgNgWnGZQheQ2CacRmC15BRMIQAAKTxYKHrjuVJAAAAAElFTkSuQmCC'; 
