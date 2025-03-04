@@ -21,6 +21,17 @@ export class Player extends Entity {
     special: false
   };
   
+  // Trail effect for creature-like movement
+  public trail: Array<{
+    x: number;
+    y: number;
+    size: number;
+    alpha: number;
+    age: number;
+    offsetX?: number;
+    offsetY?: number;
+  }> = [];
+  
   // Vampire Survivors-like auto-attack properties
   private autoAttackTimer = 0;
   private autoAttackInterval = 1.0; // Attack every 1 second
@@ -87,7 +98,12 @@ export class Player extends Entity {
     this.movementComponent = new MovementComponent({
       maxSpeed: 200, // Increased from 150 to 200
       acceleration: 1000, // Increased from 800 to 1000
-      friction: 400
+      friction: 400,
+      // Creature-like movement settings
+      turnRate: 0.7, // Slightly slower turning for more organic feel
+      oscillationAmount: 0.12, // Subtle bobbing while moving
+      oscillationSpeed: 6, // Moderate oscillation speed
+      movementRandomness: 0.03 // Very slight randomness for natural imperfection
     });
     this.addComponent(this.movementComponent);
     
@@ -119,9 +135,20 @@ export class Player extends Entity {
       
       // Set walking animation
       this.animationComponent.setSequence('walk');
+      
+      // Adjust animation speed based on movement speed
+      const speed = Math.sqrt(
+        this.currentInputState.direction.x * this.currentInputState.direction.x + 
+        this.currentInputState.direction.y * this.currentInputState.direction.y
+      );
+      // Scale animation speed with movement speed (faster movement = faster animation)
+      const animSpeed = 0.8 + (speed * 0.4); // Range from 0.8 to 1.2
+      this.animationComponent.setPlaybackSpeed(animSpeed);
     } else {
       // Set idle animation
       this.animationComponent.setSequence('idle');
+      // Reset animation speed
+      this.animationComponent.setPlaybackSpeed(1.0);
     }
     
     // Update movement direction

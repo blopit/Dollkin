@@ -74,6 +74,9 @@ export class AnimationComponent extends BaseComponent {
   /** Callback when animation frame changes */
   private onFrameChangeCallback: ((sequenceName: string, frameIndex: number) => void) | null = null;
   
+  /** Playback speed multiplier (1.0 = normal speed) */
+  private playbackSpeed = 1.0;
+  
   /**
    * Constructor
    * @param options Animation options
@@ -238,6 +241,24 @@ export class AnimationComponent extends BaseComponent {
   }
   
   /**
+   * Set the animation playback speed
+   * @param speed Speed multiplier (1.0 = normal speed)
+   * @returns This component for chaining
+   */
+  public setPlaybackSpeed(speed: number): AnimationComponent {
+    this.playbackSpeed = Math.max(0.1, speed); // Prevent negative or zero speed
+    return this;
+  }
+  
+  /**
+   * Get the current playback speed
+   * @returns Current playback speed multiplier
+   */
+  public getPlaybackSpeed(): number {
+    return this.playbackSpeed;
+  }
+  
+  /**
    * Update the animation
    * @param deltaTime Time since last update in seconds
    */
@@ -247,8 +268,8 @@ export class AnimationComponent extends BaseComponent {
       return;
     }
     
-    // Update frame time
-    this.frameTime += deltaTime;
+    // Update frame time with playback speed
+    this.frameTime += deltaTime * this.playbackSpeed;
     
     // Get current frame
     const currentFrame = this.currentSequence.frames[this.currentFrameIndex];
