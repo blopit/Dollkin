@@ -7,7 +7,7 @@ import { PROJECTILE_SPRITE_BASE64 } from '../assets/GameAssets';
 
 export interface ProjectileOptions {
   position: Vector2;
-  direction: Vector2;
+  direction: Vector2; // The drag direction - projectile will shoot in the opposite direction
   speed: number;
   damage: number;
   lifespan?: number; // Time in seconds before auto-destruction
@@ -49,8 +49,11 @@ export class Projectile extends Entity {
     });
     this.addComponent(this.movementComponent);
     
-    // Set direction immediately
-    this.movementComponent.setDirection(options.direction);
+    // Calculate the opposite direction (180 degrees rotation)
+    const shootDirection = options.direction.clone().multiply(-1);
+    
+    // Set direction immediately to the opposite of the drag direction
+    this.movementComponent.setDirection(shootDirection);
     
     // Add collision component
     this.collisionComponent = new CollisionComponent({
@@ -66,9 +69,8 @@ export class Projectile extends Entity {
       (result: CollisionResult) => {
         if (result.other?.entity?.hasTag('enemy')) {
           // Damage enemy
-          console.log(`Projectile hit enemy! Damage: ${this.damage}`);
-          
-          // Mark for destruction
+          // TODO: Implement damage system
+          console.log('Hit enemy!');
           this.destroy();
         }
       }
@@ -76,18 +78,15 @@ export class Projectile extends Entity {
   }
   
   update(deltaTime: number): void {
-    // Update age and check for lifespan
+    super.update(deltaTime);
+    
+    // Update age and destroy if lifespan exceeded
     this.age += deltaTime;
     if (this.age >= this.lifespan) {
       this.destroy();
-      return;
     }
-    
-    // Call the parent update method to update all components
-    super.update(deltaTime);
   }
   
-  // Helper method to get damage amount
   getDamage(): number {
     return this.damage;
   }
