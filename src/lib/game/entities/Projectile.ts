@@ -7,7 +7,7 @@ import { PROJECTILE_SPRITE_BASE64 } from '../assets/GameAssets';
 
 export interface ProjectileOptions {
   position: Vector2;
-  direction: Vector2; // The drag direction - projectile will shoot in the opposite direction
+  direction: Vector2; // The shooting direction (same as joystick direction)
   speed: number;
   damage: number;
   lifespan?: number; // Time in seconds before auto-destruction
@@ -49,11 +49,8 @@ export class Projectile extends Entity {
     });
     this.addComponent(this.movementComponent);
     
-    // Calculate the opposite direction (180 degrees rotation)
-    const shootDirection = options.direction.clone().multiply(-1);
-    
-    // Set direction immediately to the opposite of the drag direction
-    this.movementComponent.setDirection(shootDirection);
+    // Set direction immediately (already reversed in Player.manualAttack)
+    this.movementComponent.setDirection(options.direction);
     
     // Add collision component
     this.collisionComponent = new CollisionComponent({

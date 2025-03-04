@@ -156,7 +156,8 @@ export class Player extends Entity {
     
     // Handle action button (manual attack)
     if (this.currentInputState.action) {
-      this.attack();
+      // Use manual attack with the current movement direction
+      this.manualAttack();
     }
     
     // Handle special button
@@ -169,14 +170,14 @@ export class Player extends Entity {
     this.autoAttackTimer += deltaTime;
     if (this.autoAttackTimer >= this.autoAttackInterval) {
       this.autoAttackTimer = 0;
-      this.attack();
+      this.attack(); // Use the circular attack pattern for auto-attacks
     }
     
     // Call the parent update method to update all components
     super.update(deltaTime);
   }
   
-  // Attack method for both auto-attack and manual attack
+  // Attack method for auto-attack (circular pattern)
   private attack(): void {
     // Create projectiles in multiple directions
     const angleStep = (Math.PI * 2) / this.projectileCount;
@@ -189,6 +190,27 @@ export class Player extends Entity {
       );
       
       // Create a projectile entity
+      this.createProjectile(direction);
+    }
+  }
+  
+  // Manual attack method that uses the current movement direction
+  private manualAttack(): void {
+    // Get the current movement direction from input
+    const dirX = this.currentInputState.direction.x;
+    const dirY = this.currentInputState.direction.y;
+    
+    // Only shoot if there's a direction (magnitude > 0)
+    const magnitude = Math.sqrt(dirX * dirX + dirY * dirY);
+    if (magnitude > 0.1) {
+      // Create a normalized Vector2 from the direction
+      // Use the same direction as the joystick input
+      const direction = new Vector2(
+        dirX / magnitude,
+        dirY / magnitude
+      );
+      
+      // Create a projectile entity with this direction
       this.createProjectile(direction);
     }
   }
